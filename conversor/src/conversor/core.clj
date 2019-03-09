@@ -35,7 +35,7 @@
   (let [{:keys [de para]} (:options (parse-opts args opcoes-do-programa))]
     (-> (obter-cotacao de para)
         (formatar de para)
-        (prn))))
+        (println))))
 
 (-main "--de=USD" "--para=BRL")
 
