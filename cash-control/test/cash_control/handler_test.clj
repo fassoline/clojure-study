@@ -2,7 +2,8 @@
   (:require [midje.sweet :refer :all]
             [ring.mock.request :as mock]
             [cheshire.core :as json]
-            [cash-control.handler :refer :all]))
+            [cash-control.handler :refer :all]
+            [cash-control.db :as db]))
 
 (facts "Hello world, root route"
        (fact "status: 200"
@@ -29,3 +30,14 @@
 
          (fact "body is '0'"
                (:body response) => "{\"balance\":0}")))
+
+(facts "Registra uma receita no valor de 10"
+       (against-background (db/save {:value 10 :type "income"}) => {:id 1 :value 10 :type "income"})
+       (let [response (app (-> (mock/request :post "/transactions")
+                               (mock/json-body {:value 10 :type "income"})))]
+         
+         (fact "o status da resposta é 201"
+               (:status response) => 201)
+
+         (fact "o texto do corpo é um JSON com o conteúdo enviado e um id"
+               (:body response) => "{\"id\":1,\"value\":10,\"type\":\"income\"}")))
