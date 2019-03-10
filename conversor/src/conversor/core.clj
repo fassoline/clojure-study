@@ -4,44 +4,43 @@
             [cheshire.core :as json])
   (:gen-class))
 
-(def opcoes-do-programa
-  [["-d" "--de moeda base" "moeda base para conversão"]
-   ["-p", "--para moeda destino" "moeda qual queremos saber o valor"]])
+(def app-args
+  [["-f" "--from base currency" "base currency"]
+   ["-t", "--to destination currency" "destination currency"]])
 
-(def chave "")
+(def api-key "")
 (def api-url "https://free.currencyconverterapi.com/api/v6/convert")
 
-(defn parametrizar-moedas
-  [de para]
-  (str de "_" para))
+(defn create-currency-parameter
+  [from to]
+  (str from "_" to))
 
 (defn create-api-query-string
-  [de para]
-  (hash-map :query-params {"q" (parametrizar-moedas de para) "apiKey" chave}))
+  [from to]
+  (hash-map :query-params {"q" (create-currency-parameter from to) "apiKey" api-key}))
 
-(defn obter-cotacao
-  [de para]
-  (-> (http-client/get api-url (create-api-query-string de para))
+(defn get-current-quotation
+  [from to]
+  (-> (http-client/get api-url (create-api-query-string from to))
       (:body)
       (json/parse-string)
       (get-in ["results", "USD_BRL", "val"])))
 
-(defn formatar
-  [cotacao de para]
-  (str "1 " de " equivale a " cotacao " em " para))
+(defn create-result-phrase
+  [quotation from to]
+  (str "1 " from " equivale a " quotation " em " to))
 
 (defn -main
   [& args]
-  (let [{:keys [de para]} (:options (parse-opts args opcoes-do-programa))]
-    (-> (obter-cotacao de para)
-        (formatar de para)
+  (let [{:keys [from to]} (:options (parse-opts args app-args))]
+    (-> (get-current-quotation from to)
+        (create-result-phrase from to)
         (println))))
 
-(-main "--de=USD" "--para=BRL")
+(-main "--from=USD" "--to=BRL")
 
 ; (def full-name {:name "Felipe" :last-name "Assoline"})
 ; (get-in full-name [:name])
 
 ; (-> (hash-map :name "Felipe" :last-name "Assoline")
 ;     (get-in [:name]))
-
