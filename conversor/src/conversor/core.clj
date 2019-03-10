@@ -30,17 +30,13 @@
   [quotation from to]
   (str "1 " from " equivale a " quotation " em " to))
 
+(defn extract-args 
+  [args]
+  (:options (parse-opts args app-args)))
+
 (defn -main
   [& args]
-  (let [{:keys [from to]} (:options (parse-opts args app-args))]
+  (let [{:keys [from to]} (extract-args args) ]
     (-> (get-current-quotation from to)
         (create-result-phrase from to)
         (println))))
-
-(-main "--from=USD" "--to=BRL")
-
-; (def full-name {:name "Felipe" :last-name "Assoline"})
-; (get-in full-name [:name])
-
-; (-> (hash-map :name "Felipe" :last-name "Assoline")
-;     (get-in [:name]))
